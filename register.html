@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration | Database Sync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1; --secondary: #4f46e5; --success: #10b981; --error: #ef4444;
+            --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+            --input-border: rgba(226, 232, 240, 0.8); --input-bg: #fdfdfd; --shadow: rgba(0,0,0,0.06);
+            /* Refined Easing */
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f172a; --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8;
+                --input-border: rgba(51, 65, 85, 0.5); --input-bg: #161e31; --shadow: rgba(0,0,0,0.25);
+            }
+        }
+
+        * { box-sizing: border-box; -webkit-font-smoothing: antialiased; transition: all 0.3s var(--ease-in-out); }
+        
+        body { 
+            background: var(--bg); margin: 0; min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 20px; 
+            color: var(--text); font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .form-card { 
+            background: var(--card); width: 100%; max-width: 460px; padding: 40px; 
+            border-radius: 28px; box-shadow: 0 20px 40px -10px var(--shadow);
+            border: 1px solid var(--input-border); position: relative;
+            animation: popIn 0.7s var(--ease-out);
+            will-change: transform, opacity;
+        }
+
+        .form-card.hidden { opacity: 0; transform: scale(0.92) translateY(15px); pointer-events: none; }
+
+        .icon-header {
+            width: 60px; height: 60px; background: rgba(99, 102, 241, 0.12);
+            color: var(--primary); border-radius: 18px;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 20px; animation: pulse 3s infinite var(--ease-in-out);
+        }
+        .icon-header span { font-size: 30px; font-variation-settings: 'FILL' 1; }
+
+        .header { text-align: center; margin-bottom: 32px; }
+        .header h2 { font-size: 1.75rem; font-weight: 800; margin: 0; letter-spacing: -0.025em; }
+        .header p { color: var(--muted); margin: 8px 0 0; font-size: 0.9rem; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .full { grid-column: span 2; }
+
+        .input-group label { 
+            display: flex; align-items: center; gap: 6px; font-size: 0.68rem; 
+            font-weight: 800; color: var(--muted); margin-bottom: 6px; 
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        input[type="text"] { 
+            width: 100%; padding: 13px 16px; border: 2px solid var(--input-border); 
+            border-radius: 14px; font-size: 0.95rem; color: var(--text); background: var(--input-bg);
+            outline: none; transition: border-color 0.25s var(--ease-in-out), box-shadow 0.25s var(--ease-in-out);
+        }
+
+        input[type="text"]:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+        input.invalid { border-color: var(--error); animation: shake 0.4s var(--ease-in-out); }
+
+        .privacy-wrapper { margin-top: 8px; }
+        .checkbox-container {
+            display: flex; align-items: flex-start; gap: 12px; cursor: pointer;
+            user-select: none; padding: 4px;
+        }
+        .checkbox-container input { display: none; }
+        .checkmark {
+            min-width: 20px; height: 20px; border: 2px solid var(--input-border);
+            border-radius: 6px; position: relative; background: var(--input-bg);
+            transition: all 0.2s var(--ease-in-out);
+        }
+        .checkbox-container input:checked ~ .checkmark { background: var(--primary); border-color: var(--primary); transform: scale(1.05); }
+        .checkbox-container input:checked ~ .checkmark::after {
+            content: "check"; font-family: 'Material Symbols Rounded';
+            color: white; font-size: 16px; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+        .checkbox-text { font-size: 0.82rem; color: var(--muted); line-height: 1.4; font-weight: 500; }
+
+        button { 
+            width: 100%; padding: 16px; background: var(--primary); color: white; 
+            border: none; border-radius: 16px; font-weight: 700; font-size: 1rem;
+            cursor: pointer; margin-top: 24px; display: flex; justify-content: center; 
+            align-items: center; gap: 10px; box-shadow: 0 8px 15px -3px rgba(99, 102, 241, 0.25);
+            transition: transform 0.3s var(--ease-out), background 0.3s var(--ease-in-out), box-shadow 0.3s var(--ease-in-out);
+        }
+
+        @media (hover: hover) {
+            button:hover:not(:disabled) { background: var(--secondary); transform: translateY(-3px); box-shadow: 0 12px 20px -5px rgba(99, 102, 241, 0.35); }
+            .checkbox-container:hover .checkmark { border-color: var(--primary); }
+        }
+
+        @media (hover: none) {
+            button:active:not(:disabled) { transform: scale(0.96); opacity: 0.9; }
+            .checkbox-container:active .checkmark { transform: scale(0.9); }
+        }
+
+        button:disabled { background: #cbd5e1; opacity: 0.6; cursor: not-allowed; box-shadow: none; transform: none; }
+
+        @media (prefers-color-scheme: dark) { button:disabled { background: #334155; color: #64748b; } }
+
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            min-width: 260px; padding: 14px 18px; background: var(--card); border-radius: 14px;
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 10px;
+            border-left: 4px solid var(--primary); font-size: 0.9rem; font-weight: 600;
+            animation: slideIn 0.5s var(--ease-out) forwards;
+        }
+        .toast.error { border-left-color: var(--error); }
+        .toast.success { border-left-color: var(--success); }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.92) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        .spinning { animation: spin 1s linear infinite; }
+    </style>
+</head>
+<body>
+
+<div id="toast-container" role="alert" aria-live="polite"></div>
+
+<main class="form-card" id="mainForm">
+    <div class="icon-header">
+        <span class="material-symbols-rounded">person_add</span>
+    </div>
+    <div class="header">
+        <h2>Join Now</h2>
+        <p>Sync your profile to the secure database</p>
+    </div>
+
+    <div class="grid">
+        <div class="input-group">
+            <label for="name"><span class="material-symbols-rounded">badge</span> Name</label>
+            <input type="text" id="name" placeholder="John Doe" required autocomplete="name">
+        </div>
+        <div class="input-group">
+            <label for="education"><span class="material-symbols-rounded">school</span> Class</label>
+            <input type="text" id="education" placeholder="Grade/Major" required>
+        </div>
+        <div class="input-group full">
+            <label for="instagram"><span class="material-symbols-rounded">alternate_email</span> Instagram Handle</label>
+            <input type="text" id="instagram" placeholder="@username" required autocomplete="username">
+        </div>
+        <div class="input-group full">
+            <label for="address"><span class="material-symbols-rounded">map</span> Address</label>
+            <input type="text" id="address" placeholder="City, Country">
+        </div>
+        <div class="input-group full privacy-wrapper">
+            <label class="checkbox-container">
+                <input type="checkbox" id="privacyToggle" onchange="updateButtonState()">
+                <span class="checkmark"></span>
+                <span class="checkbox-text">I agree to the secure profile sync & privacy terms</span>
+            </label>
+        </div>
+    </div>
+
+    <button id="submitBtn" onclick="saveData()" disabled>
+        <span id="btn-icon" class="material-symbols-rounded">cloud_upload</span> 
+        <span id="btn-text">Sync Profile</span>
+    </button>
+</main>
+
+<script>
+    const API_ENDPOINT = "https://script.google.com/macros/s/AKfycbyeDc7ZfgKyyC0ix8S69PY9Qr1faTBMM3OVkVTVMBo9aiWtOYeblfnP-yOHgo39mLi-/exec";
+    const SECURITY_TOKEN = "NG_SECURE_V1_8273"; 
+    const THANK_YOU_URL = "thank-you.html";
+
+    const deepSanitize = (str) => {
+        if (!str) return "";
+        return str.toString()
+            .replace(/<[^>]*>?/gm, '')
+            .replace(/[^\w\s@.,-]/gi, '')
+            .trim();
+    };
+
+    function updateButtonState() {
+        const isChecked = document.getElementById('privacyToggle').checked;
+        document.getElementById('submitBtn').disabled = !isChecked;
+    }
+
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? 'check_circle' : 'error';
+        toast.innerHTML = `<span class="material-symbols-rounded" style="color:var(--${type}); font-variation-settings: 'FILL' 1;">${icon}</span><span>${msg}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(20px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    const normalizeHandle = (str) => {
+        if (!str) return "";
+        return str.replace(/^(https?:\/\/)?(www\.)?instagram\.com\/|@|\/|\s/g, "").split('?')[0].toLowerCase().trim();
+    };
+
+    async function saveData() {
+        const btn = document.getElementById('submitBtn');
+        const icon = document.getElementById('btn-icon');
+        const text = document.getElementById('btn-text');
+        
+        const nameInput = document.getElementById('name');
+        const eduInput = document.getElementById('education');
+        const instaInput = document.getElementById('instagram');
+        const addrInput = document.getElementById('address');
+
+        [nameInput, eduInput, instaInput].forEach(el => el.classList.remove('invalid'));
+
+        if(!nameInput.value.trim() || !eduInput.value.trim() || !instaInput.value.trim()) {
+            if(!nameInput.value.trim()) nameInput.classList.add('invalid');
+            if(!eduInput.value.trim()) eduInput.classList.add('invalid');
+            if(!instaInput.value.trim()) instaInput.classList.add('invalid');
+            return showToast("Required fields are missing.", "error");
+        }
+
+        const handle = normalizeHandle(instaInput.value);
+        if(!handle) return showToast("Invalid Instagram handle.", "error");
+
+        const payload = {
+            token: SECURITY_TOKEN, 
+            name: deepSanitize(nameInput.value),
+            education: deepSanitize(eduInput.value),
+            instagram: handle,
+            address: deepSanitize(addrInput.value)
+        };
+
+        btn.disabled = true;
+        icon.innerText = "progress_activity";
+        icon.classList.add("spinning");
+        text.innerText = "Syncing...";
+
+        try {
+            const checkResponse = await fetch(`${API_ENDPOINT}?t=${Date.now()}`);
+            if (!checkResponse.ok) throw new Error();
+            
+            const currentData = await checkResponse.json();
+            const isDuplicate = Array.isArray(currentData) && currentData.some(entry => 
+                normalizeHandle(entry.instagram || "") === handle
+            );
+
+            if (isDuplicate) {
+                showToast("This handle is already registered.", "error");
+                return resetUI();
+            }
+
+            await fetch(API_ENDPOINT, {
+                method: 'POST',
+                mode: 'no-cors', 
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            icon.innerText = "done_all";
+            icon.classList.remove("spinning");
+            text.innerText = "Sync Complete";
+            btn.style.background = "var(--success)";
+            
+            setTimeout(() => {
+                document.getElementById('mainForm').classList.add('hidden');
+                setTimeout(() => window.location.replace(THANK_YOU_URL), 600);
+            }, 1000);
+
+        } catch (e) {
+            console.error("Sync Failure:", e);
+            showToast("Sync interrupted. Try again.", "error");
+            resetUI();
+        }
+    }
+
+    function resetUI() {
+        const btn = document.getElementById('submitBtn');
+        const icon = document.getElementById('btn-icon');
+        const text = document.getElementById('btn-text');
+        const privacy = document.getElementById('privacyToggle').checked;
+        
+        btn.disabled = !privacy;
+        icon.innerText = "cloud_upload";
+        icon.classList.remove("spinning");
+        text.innerText = "Sync Profile";
+    }
+</script>
+
+</body>
+</html>
